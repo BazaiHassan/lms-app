@@ -1,29 +1,31 @@
-from typing import Optional, List
+from typing import List
+from fastapi import  Depends, HTTPException
 import fastapi
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from ..db.db_setup import get_db
+from ..pydantic_schemas.users import UserCreate, User
+from .utils.users import create_user, get_user_by_id, get_user_by_email, get_users
 
 router = fastapi.APIRouter()
 
-users = []
 
-
-class User(BaseModel):
-    email: str
-    is_active: bool
-    bio: Optional[str]
 
 
 @router.get("/users", response_model=List[User])
-async def get_users():
+async def get_all_users(skip: int=0, limit:int = 100, db:Session=Depends(get_db)):
+    users = get_users(db=db, skip=skip, limit=limit)
     return users
 
 
-@router.post("/users")
-async def create_user(user: User):
-    users.append(user)
-    return "Success"
+@router.post("/users", response_model=User, status_code=201)
+async def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
+    db_user = get_user_by_email(db=db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email is already registered")
+    return create_user(db=db, user=user)
 
 
-@router.get("/users/{id}")
-async def get_user(id: int):
-    return { "user": users[id] }
+# @router.get("/users/{id}")
+# async def get_user(id: int):
+#     return { "user": users[id] }
