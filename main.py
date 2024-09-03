@@ -1,12 +1,10 @@
 from fastapi import FastAPI
-
-from backend.api import users, courses, sections
-
-from backend.db.db_setup import engine
-from backend.db.models import user, course
+from backend.api import users, ml_endpoints
+from backend.db.db_setup import engine, async_engine
+from backend.db.models import user
 
 user.Base.metadata.create_all(bind=engine)
-course.Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(
     title="Fast API LMS",
@@ -22,5 +20,4 @@ app = FastAPI(
 )
 
 app.include_router(users.router)
-app.include_router(courses.router)
-app.include_router(sections.router)
+app.include_router(ml_endpoints.router)

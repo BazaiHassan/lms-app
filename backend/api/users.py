@@ -7,9 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.db_setup import async_get_db, get_db
 from ..pydantic_schemas.user import UserCreate, User
-from ..pydantic_schemas.course import Course
 from ..api.utils.users import get_user, get_user_by_email, get_users, create_user
-from ..api.utils.courses import get_user_courses
 
 router = fastapi.APIRouter()
 
@@ -39,8 +37,3 @@ async def read_user(user_id: int, db: AsyncSession = Depends(async_get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-
-@router.get("/users/{user_id}/courses", response_model=List[Course])
-async def read_user_courses(user_id: int, db: Session = Depends(get_db)):
-    courses = get_user_courses(user_id=user_id, db=db)
-    return courses
